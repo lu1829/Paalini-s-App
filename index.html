@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Brain Vomit Organizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Nunito Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #05060a;
+      color: #f5f5f5;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+    }
+
+    .subtitle {
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: #a0a3b7;
+    }
+
+    .panel {
+      background: #0b0e18;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid #171a26;
+    }
+
+    .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #8589a3;
+      margin-bottom: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      background: #05060a;
+      color: #f5f5f5;
+      border-radius: 10px;
+      border: 1px solid #262a3d;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    textarea:focus {
+      outline: 1px solid #5f7bff;
+      box-shadow: 0 0 0 1px #5f7bff33;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #5f7bff, #f26dd4);
+      color: #05060a;
+      font-weight: 600;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    }
+
+    button.secondary {
+      background: #151827;
+      color: #d0d3ea;
+      border: 1px solid #262a3d;
+    }
+
+    button.danger {
+      background: #301017;
+      color: #ffb4c4;
+      border: 1px solid #5a1d2c;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .board-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .board-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8589a3;
+    }
+
+    .board {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .column {
+      background: #090b13;
+      border-radius: 14px;
+      border: 1px solid #171a26;
+      min-width: 220px;
+      max-width: 260px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 260px);
+    }
+
+    .column-header {
+      padding: 8px 10px 6px;
+      border-bottom: 1px solid #171a26;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .column-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: #8b8fb0;
+      margin-bottom: 2px;
+    }
+
+    .column-title[contenteditable="true"] {
+      cursor: text;
+    }
+
+    .column-hint {
+      font-size: 0.7rem;
+      color: #5f6378;
+    }
+
+    .column-body {
+      padding: 8px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .column-body.drag-hover {
+      outline: 1px dashed #5f7bff;
+      outline-offset: -4px;
+      background: #090b13ea;
+    }
+
+    .card {
+      border-radius: 10px;
+      padding: 7px 8px;
+      margin-bottom: 7px;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      background: linear-gradient(135deg, #21253a, #181b2b);
+      border: 1px solid rgba(255,255,255,0.05);
+      cursor: grab;
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    }
+
+    .card.dragging {
+      opacity: 0.6;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+    }
+
+    .card-text {
+      outline: none;
+    }
+
+    .card-text[contenteditable="true"]:focus {
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px #5f7bff;
+      padding: 1px 2px;
+      margin: -1px -2px;
+      background: rgba(5,6,10,0.6);
+    }
+
+    .empty-hint {
+      font-size: 0.7rem;
+      color: #4f5264;
+      font-style: italic;
+      padding: 4px 2px;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .column { min-width: 200px; }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+      .panel, .column {
+        border-color: #ccc;
+        box-shadow: none;
+      }
+      textarea {
+        background: #ffffff;
+        color: #000000;
+      }
+      button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>BRAIN VOMIT ORGANIZER</h1>
+    <div class="subtitle">
+      Dump everything, slice into cards, drag them into problems, themes, solutions.
+      Saved locally in your browser.
+    </div>
+
+    <div class="panel">
+      <div class="label">Brain dump</div>
+      <textarea id="dumpInput" placeholder="Write or paste anything here.&#10;One thought per line works best."></textarea>
+      <div class="controls">
+        <button class="primary" id="explodeBtn">✂️ Explode into cards</button>
+        <button class="secondary" id="autoSortBtn">🧠 Simple auto-sort (no AI)</button>
+        <button class="secondary" id="printBtn">🖨 Export / Print</button>
+        <button class="danger" id="clearBtn">🧹 Clear everything</button>
+      </div>
+    </div>
+
+    <div class="board-header">
+      <div class="board-label">Board</div>
+      <div class="controls">
+        <button class="secondary" id="addColumnBtn">➕ Add column</button>
+      </div>
+    </div>
+
+    <div class="board" id="board">
+      <!-- Columns will be built from JS -->
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "brainVomitBoard_v1";
+
+    const defaultColumns = [
+      { id: "inbox", title: "Inbox", hint: "Fresh pieces land here." },
+      { id: "problems", title: "Problems", hint: "What is hurting, blocking, confusing." },
+      { id: "ideas", title: "Ideas", hint: "Possibilities, maybes, crazy thoughts." },
+      { id: "solutions", title: "Solutions", hint: "Concrete steps, experiments, moves." }
+    ];
+
+    const dumpInput = document.getElementById("dumpInput");
+    const explodeBtn = document.getElementById("explodeBtn");
+    const autoSortBtn = document.getElementById("autoSortBtn");
+    const printBtn = document.getElementById("printBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const addColumnBtn = document.getElementById("addColumnBtn");
+    const board = document.getElementById("board");
+
+    let draggedCard = null;
+
+    /* ---------- STATE ---------- */
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+
+    function saveState() {
+      const state = {
+        columns: []
+      };
+      document.querySelectorAll(".column").forEach(col => {
+        const id = col.dataset.id;
+        const title = col.querySelector(".column-title").textContent.trim() || "Untitled";
+        const hint = col.querySelector(".column-hint")?.textContent || "";
+        const cards = Array.from(col.querySelectorAll(".card-text")).map(ct => ct.textContent);
+        state.columns.push({ id, title, hint, cards });
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    /* ---------- UI BUILD ---------- */
+
+    function removeEmptyHints() {
+      document.querySelectorAll(".empty-hint").forEach(h => h.remove());
+    }
+
+    function addEmptyHints() {
+      document.querySelectorAll(".column-body").forEach(body => {
+        if (!body.querySelector(".card") && !body.querySelector(".empty-hint")) {
+          const hint = document.createElement("div");
+          hint.className = "empty-hint";
+          hint.textContent = "Drop cards here.";
+          body.appendChild(hint);
+        }
+      });
+    }
+
+    function createColumn(columnState) {
+      const col = document.createElement("div");
+      col.className = "column";
+      col.dataset.id = columnState.id;
+
+      const header = document.createElement("div");
+      header.className = "column-header";
+
+      const title = document.createElement("div");
+      title.className = "column-title";
+      title.contentEditable = "true";
+      title.textContent = columnState.title || "Untitled";
+
+      title.addEventListener("blur", saveState);
+
+      const hint = document.createElement("div");
+      hint.className = "column-hint";
+      hint.textContent = columnState.hint || "";
+
+      const body = document.createElement("div");
+      body.className = "column-body";
+
+      addDropHandlers(body);
+
+      header.appendChild(title);
+      header.appendChild(hint);
+      col.appendChild(header);
+      col.appendChild(body);
+      board.appendChild(col);
+
+      (columnState.cards || []).forEach(text => {
+        createCard(text, body);
+      });
+    }
+
+    function createCard(text, targetBody) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.draggable = true;
+
+      const inner = document.createElement("div");
+      inner.className = "card-text";
+      inner.contentEditable = "true";
+      inner.textContent = text;
+
+      inner.addEventListener("blur", saveState);
+
+      card.appendChild(inner);
+      addDragHandlers(card);
+
+      removeEmptyHints();
+      targetBody.appendChild(card);
+    }
+
+    function addDragHandlers(card) {
+      card.addEventListener("dragstart", (e) => {
+        draggedCard = card;
+        card.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+
+      card.addEventListener("dragend", () => {
+        if (draggedCard === card) {
+          draggedCard = null;
+        }
+        card.classList.remove("dragging");
+        saveState();
+      });
+    }
+
+    function addDropHandlers(body) {
+      body.addEventListener("dragover", (e) => {
+        if (!draggedCard) return;
+        e.preventDefault();
+        body.classList.add("drag-hover");
+      });
+
+      body.addEventListener("dragleave", () => {
+        body.classList.remove("drag-hover");
+      });
+
+      body.addEventListener("drop", (e) => {
+        e.preventDefault();
+        body.classList.remove("drag-hover");
+        if (!draggedCard) return;
+        removeEmptyHints();
+        body.appendChild(draggedCard);
+        saveState();
+      });
+    }
+
+    function initBoard() {
+      board.innerHTML = "";
+      const saved = loadState();
+      const columns = saved?.columns && saved.columns.length ? saved.columns : defaultColumns.map(c => ({ ...c, cards: [] }));
+
+      columns.forEach(col => createColumn(col));
+      addEmptyHints();
+    }
+
+    /* ---------- LOGIC ---------- */
+
+    function explodeDump() {
+      const text = dumpInput.value;
+      if (!text.trim()) return;
+
+      const lines = text
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+      if (!lines.length) return;
+
+      const inboxBody = document.querySelector('.column[data-id="inbox"] .column-body') || document.querySelector(".column-body");
+      lines.forEach(line => {
+        createCard(line, inboxBody);
+      });
+
+      dumpInput.value = "";
+      saveState();
+    }
+
+    // super simple keyword-based “organizer” – no AI at all
+    function simpleAutoSort() {
+      const inboxBody = document.querySelector('.column[data-id="inbox"] .column-body');
+      if (!inboxBody) return;
+
+      const problemsBody = document.querySelector('.column[data-id="problems"] .column-body');
+      const ideasBody = document.querySelector('.column[data-id="ideas"] .column-body');
+      const solutionsBody = document.querySelector('.column[data-id="solutions"] .column-body');
+
+      const cards = Array.from(inboxBody.querySelectorAll(".card"));
+      if (!cards.length) return;
+
+      removeEmptyHints();
+
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+
+        let target = null;
+
+        if (/(problem|issue|stuck|block|worry|anxiety|fear)/.test(text) && problemsBody) {
+          target = problemsBody;
+        } else if (/(idea|maybe|could|what if|imagine)/.test(text) && ideasBody) {
+          target = ideasBody;
+        } else if (/(next step|plan|i will|i’ll|do this|action|solution)/.test(text) && solutionsBody) {
+          target = solutionsBody;
+        }
+
+        if (target) {
+          target.appendChild(card);
+        }
+      });
+
+      saveState();
+      addEmptyHints();
+    }
+
+    function clearAll() {
+      if (!confirm("Delete all columns and cards? This cannot be undone.")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      dumpInput.value = "";
+      initBoard();
+    }
+
+    function addColumn() {
+      const id = "col_" + Date.now();
+      const columnState = {
+        id,
+        title: "New column",
+        hint: "Rename and use however you want.",
+        cards: []
+      };
+      createColumn(columnState);
+      addEmptyHints();
+      saveState();
+    }
+
+    /* ---------- EVENTS ---------- */
+
+    explodeBtn.addEventListener("click", explodeDump);
+    autoSortBtn.addEventListener("click", simpleAutoSort);
+    clearBtn.addEventListener("click", clearAll);
+    addColumnBtn.addEventListener("click", addColumn);
+
+    printBtn.addEventListener("click", () => {
+      window.print(); // Use browser “Save as PDF” for export
+    });
+
+    dumpInput.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        explodeDump();
+      }
+    });
+
+    /* ---------- INIT ---------- */
+    initBoard();
+  </script>
+</body>
+</html>
