@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Brain Vomit Organizer</title>
+  <title>Brain Journal Organizer</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -38,8 +38,12 @@
       background: #0b0e18;
       border-radius: 14px;
       padding: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       border: 1px solid #171a26;
+    }
+
+    .panel.small {
+      margin-bottom: 10px;
     }
 
     .label {
@@ -50,9 +54,26 @@
       margin-bottom: 6px;
     }
 
+    .journal-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select {
+      background: #05060a;
+      color: #f5f5f5;
+      border-radius: 999px;
+      border: 1px solid #262a3d;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      min-width: 180px;
+    }
+
     textarea {
       width: 100%;
-      min-height: 120px;
       resize: vertical;
       background: #05060a;
       color: #f5f5f5;
@@ -64,9 +85,18 @@
       line-height: 1.4;
     }
 
-    textarea:focus {
+    textarea:focus, select:focus {
       outline: 1px solid #5f7bff;
       box-shadow: 0 0 0 1px #5f7bff33;
+    }
+
+    #entryNote {
+      min-height: 60px;
+      font-size: 0.8rem;
+    }
+
+    #dumpInput {
+      min-height: 120px;
     }
 
     .controls {
@@ -159,9 +189,8 @@
       padding: 8px 10px 6px;
       border-bottom: 1px solid #171a26;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .column-title {
@@ -235,41 +264,49 @@
       .column { min-width: 200px; }
     }
 
+    /* Keep colors on print – no overriding background */
     @media print {
-      body {
-        background: #ffffff;
-        color: #000000;
+      button, select, #dumpInput {
+        display: none;
       }
       .panel, .column {
-        border-color: #ccc;
         box-shadow: none;
       }
-      textarea {
-        background: #ffffff;
-        color: #000000;
-      }
-      button {
-        display: none;
+      body {
+        padding: 0;
       }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <h1>BRAIN VOMIT ORGANIZER</h1>
+    <h1>BRAIN JOURNAL ORGANIZER</h1>
     <div class="subtitle">
-      Dump everything, slice into cards, drag them into problems, themes, solutions.
-      Saved locally in your browser.
+      Each entry is a snapshot of your brain: dump, organize, drag things into problems / ideas / solutions.
+      Everything is saved locally as a journal.
     </div>
 
+    <!-- JOURNAL PANEL -->
+    <div class="panel small">
+      <div class="label">Journal entry</div>
+      <div class="journal-row">
+        <select id="entrySelect"></select>
+        <button class="secondary" id="newEntryBtn">➕ New entry</button>
+        <button class="secondary" id="renameEntryBtn">✏️ Rename</button>
+        <button class="danger" id="deleteEntryBtn">🗑 Delete entry</button>
+      </div>
+      <textarea id="entryNote" placeholder="Notes for this entry (context, mood, what you're trying to solve)..."></textarea>
+    </div>
+
+    <!-- DUMP PANEL -->
     <div class="panel">
       <div class="label">Brain dump</div>
       <textarea id="dumpInput" placeholder="Write or paste anything here.&#10;One thought per line works best."></textarea>
       <div class="controls">
-        <button class="primary" id="explodeBtn">✂️ Explode into cards</button>
-        <button class="secondary" id="autoSortBtn">🧠 Simple auto-sort (no AI)</button>
+        <button class="primary" id="explodeBtn">✂️ Explode & organize</button>
+        <button class="secondary" id="autoSortBtn">🧠 Re-run organize on Inbox</button>
         <button class="secondary" id="printBtn">🖨 Export / Print</button>
-        <button class="danger" id="clearBtn">🧹 Clear everything</button>
+        <button class="danger" id="clearBoardBtn">🧹 Clear board (this entry)</button>
       </div>
     </div>
 
@@ -280,58 +317,156 @@
       </div>
     </div>
 
-    <div class="board" id="board">
-      <!-- Columns will be built from JS -->
-    </div>
+    <div class="board" id="board"></div>
   </div>
 
   <script>
-    const STORAGE_KEY = "brainVomitBoard_v1";
+    const JOURNAL_KEY = "brainJournal_v1";
 
     const defaultColumns = [
-      { id: "inbox", title: "Inbox", hint: "Fresh pieces land here." },
-      { id: "problems", title: "Problems", hint: "What is hurting, blocking, confusing." },
-      { id: "ideas", title: "Ideas", hint: "Possibilities, maybes, crazy thoughts." },
-      { id: "solutions", title: "Solutions", hint: "Concrete steps, experiments, moves." }
+      { id: "inbox", title: "Inbox", hint: "Fresh pieces land here.", cards: [] },
+      { id: "problems", title: "Problems", hint: "What is hurting, blocking, confusing.", cards: [] },
+      { id: "ideas", title: "Ideas", hint: "Possibilities, maybes, crazy thoughts.", cards: [] },
+      { id: "solutions", title: "Solutions", hint: "Concrete steps, experiments, moves.", cards: [] }
     ];
 
     const dumpInput = document.getElementById("dumpInput");
     const explodeBtn = document.getElementById("explodeBtn");
     const autoSortBtn = document.getElementById("autoSortBtn");
     const printBtn = document.getElementById("printBtn");
-    const clearBtn = document.getElementById("clearBtn");
+    const clearBoardBtn = document.getElementById("clearBoardBtn");
     const addColumnBtn = document.getElementById("addColumnBtn");
     const board = document.getElementById("board");
 
+    const entrySelect = document.getElementById("entrySelect");
+    const newEntryBtn = document.getElementById("newEntryBtn");
+    const renameEntryBtn = document.getElementById("renameEntryBtn");
+    const deleteEntryBtn = document.getElementById("deleteEntryBtn");
+    const entryNote = document.getElementById("entryNote");
+
     let draggedCard = null;
+    let journal = {
+      entries: [],
+      activeEntryId: null
+    };
 
-    /* ---------- STATE ---------- */
+    /* ---------- JOURNAL STATE ---------- */
 
-    function loadState() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return null;
+    function loadJournal() {
+      const raw = localStorage.getItem(JOURNAL_KEY);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.entries)) {
+            journal = parsed;
+          }
+        } catch (e) {}
       }
+
+      if (!journal.entries.length) {
+        createNewEntry(true);
+      } else if (!journal.activeEntryId) {
+        journal.activeEntryId = journal.entries[0].id;
+      }
+
+      renderEntrySelect();
+      loadActiveEntryToUI();
     }
 
-    function saveState() {
-      const state = {
-        columns: []
+    function saveJournal() {
+      const active = getActiveEntry();
+      if (active) {
+        active.state = captureBoardState();
+        active.note = entryNote.value;
+      }
+      localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal));
+    }
+
+    function getActiveEntry() {
+      return journal.entries.find(e => e.id === journal.activeEntryId) || null;
+    }
+
+    function createNewEntry(isFirst = false) {
+      const now = new Date();
+      const label = now.toISOString().slice(0,10); // yyyy-mm-dd
+      const id = "entry_" + now.getTime();
+
+      const entry = {
+        id,
+        title: isFirst ? label + " (first)" : label,
+        createdAt: now.toISOString(),
+        note: "",
+        state: { columns: JSON.parse(JSON.stringify(defaultColumns)) }
       };
+
+      journal.entries.push(entry);
+      journal.activeEntryId = id;
+      renderEntrySelect();
+      loadActiveEntryToUI();
+      saveJournal();
+    }
+
+    function deleteCurrentEntry() {
+      if (!journal.activeEntryId) return;
+      if (journal.entries.length === 1) {
+        if (!confirm("Delete the only entry? This will reset everything.")) return;
+        journal.entries = [];
+        journal.activeEntryId = null;
+        createNewEntry(true);
+        saveJournal();
+        return;
+      }
+      const active = getActiveEntry();
+      if (!active) return;
+      if (!confirm(`Delete entry "${active.title}"?`)) return;
+
+      journal.entries = journal.entries.filter(e => e.id !== journal.activeEntryId);
+      journal.activeEntryId = journal.entries[0].id;
+      renderEntrySelect();
+      loadActiveEntryToUI();
+      saveJournal();
+    }
+
+    function renderEntrySelect() {
+      entrySelect.innerHTML = "";
+      journal.entries.forEach(entry => {
+        const opt = document.createElement("option");
+        opt.value = entry.id;
+        opt.textContent = entry.title;
+        if (entry.id === journal.activeEntryId) opt.selected = true;
+        entrySelect.appendChild(opt);
+      });
+    }
+
+    function loadActiveEntryToUI() {
+      const active = getActiveEntry();
+      if (!active) return;
+
+      entryNote.value = active.note || "";
+      board.innerHTML = "";
+      const state = active.state && Array.isArray(active.state.columns)
+        ? active.state
+        : { columns: JSON.parse(JSON.stringify(defaultColumns)) };
+
+      state.columns.forEach(colState => createColumn(colState));
+      addEmptyHints();
+    }
+
+    /* ---------- BOARD STATE ---------- */
+
+    function captureBoardState() {
+      const columns = [];
       document.querySelectorAll(".column").forEach(col => {
         const id = col.dataset.id;
         const title = col.querySelector(".column-title").textContent.trim() || "Untitled";
         const hint = col.querySelector(".column-hint")?.textContent || "";
         const cards = Array.from(col.querySelectorAll(".card-text")).map(ct => ct.textContent);
-        state.columns.push({ id, title, hint, cards });
+        columns.push({ id, title, hint, cards });
       });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      return { columns };
     }
 
-    /* ---------- UI BUILD ---------- */
+    /* ---------- UI HELPERS ---------- */
 
     function removeEmptyHints() {
       document.querySelectorAll(".empty-hint").forEach(h => h.remove());
@@ -360,8 +495,7 @@
       title.className = "column-title";
       title.contentEditable = "true";
       title.textContent = columnState.title || "Untitled";
-
-      title.addEventListener("blur", saveState);
+      title.addEventListener("blur", saveJournal);
 
       const hint = document.createElement("div");
       hint.className = "column-hint";
@@ -369,7 +503,6 @@
 
       const body = document.createElement("div");
       body.className = "column-body";
-
       addDropHandlers(body);
 
       header.appendChild(title);
@@ -393,7 +526,7 @@
       inner.contentEditable = "true";
       inner.textContent = text;
 
-      inner.addEventListener("blur", saveState);
+      inner.addEventListener("blur", saveJournal);
 
       card.appendChild(inner);
       addDragHandlers(card);
@@ -414,7 +547,7 @@
           draggedCard = null;
         }
         card.classList.remove("dragging");
-        saveState();
+        saveJournal();
       });
     }
 
@@ -435,22 +568,26 @@
         if (!draggedCard) return;
         removeEmptyHints();
         body.appendChild(draggedCard);
-        saveState();
+        saveJournal();
       });
     }
 
-    function initBoard() {
-      board.innerHTML = "";
-      const saved = loadState();
-      const columns = saved?.columns && saved.columns.length ? saved.columns : defaultColumns.map(c => ({ ...c, cards: [] }));
+    /* ---------- LOGIC: CLASSIFICATION ---------- */
 
-      columns.forEach(col => createColumn(col));
-      addEmptyHints();
+    function classifyLine(text) {
+      const t = text.toLowerCase();
+
+      const isProblem = /(problem|issue|stuck|block|worry|anxiety|scared|fear|confused|overwhelmed)/.test(t);
+      const isIdea = /(idea|maybe|could|what if|imagine|dream|potential)/.test(t);
+      const isSolution = /(next step|i will|i'll|plan|do this|action|solution|experiment)/.test(t);
+
+      if (isSolution) return "solutions";
+      if (isIdea) return "ideas";
+      if (isProblem) return "problems";
+      return "inbox";
     }
 
-    /* ---------- LOGIC ---------- */
-
-    function explodeDump() {
+    function explodeAndOrganize() {
       const text = dumpInput.value;
       if (!text.trim()) return;
 
@@ -461,17 +598,27 @@
 
       if (!lines.length) return;
 
-      const inboxBody = document.querySelector('.column[data-id="inbox"] .column-body') || document.querySelector(".column-body");
+      const bodies = {
+        inbox: document.querySelector('.column[data-id="inbox"] .column-body'),
+        problems: document.querySelector('.column[data-id="problems"] .column-body'),
+        ideas: document.querySelector('.column[data-id="ideas"] .column-body'),
+        solutions: document.querySelector('.column[data-id="solutions"] .column-body')
+      };
+
+      const fallbackBody = bodies.inbox || document.querySelector(".column-body");
+
       lines.forEach(line => {
-        createCard(line, inboxBody);
+        const colId = classifyLine(line);
+        const target = bodies[colId] || fallbackBody;
+        createCard(line, target);
       });
 
       dumpInput.value = "";
-      saveState();
+      saveJournal();
+      addEmptyHints();
     }
 
-    // super simple keyword-based “organizer” – no AI at all
-    function simpleAutoSort() {
+    function autoSortInbox() {
       const inboxBody = document.querySelector('.column[data-id="inbox"] .column-body');
       if (!inboxBody) return;
 
@@ -479,38 +626,31 @@
       const ideasBody = document.querySelector('.column[data-id="ideas"] .column-body');
       const solutionsBody = document.querySelector('.column[data-id="solutions"] .column-body');
 
+      const bodies = { problems: problemsBody, ideas: ideasBody, solutions: solutionsBody };
+
       const cards = Array.from(inboxBody.querySelectorAll(".card"));
       if (!cards.length) return;
 
       removeEmptyHints();
 
       cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-
-        let target = null;
-
-        if (/(problem|issue|stuck|block|worry|anxiety|fear)/.test(text) && problemsBody) {
-          target = problemsBody;
-        } else if (/(idea|maybe|could|what if|imagine)/.test(text) && ideasBody) {
-          target = ideasBody;
-        } else if (/(next step|plan|i will|i’ll|do this|action|solution)/.test(text) && solutionsBody) {
-          target = solutionsBody;
-        }
-
-        if (target) {
-          target.appendChild(card);
+        const text = card.innerText.trim();
+        const targetCol = classifyLine(text);
+        if (targetCol !== "inbox" && bodies[targetCol]) {
+          bodies[targetCol].appendChild(card);
         }
       });
 
-      saveState();
+      saveJournal();
       addEmptyHints();
     }
 
-    function clearAll() {
-      if (!confirm("Delete all columns and cards? This cannot be undone.")) return;
-      localStorage.removeItem(STORAGE_KEY);
-      dumpInput.value = "";
-      initBoard();
+    function clearBoardForEntry() {
+      if (!confirm("Clear all cards for this entry?")) return;
+      board.innerHTML = "";
+      defaultColumns.forEach(col => createColumn(col));
+      addEmptyHints();
+      saveJournal();
     }
 
     function addColumn() {
@@ -523,28 +663,53 @@
       };
       createColumn(columnState);
       addEmptyHints();
-      saveState();
+      saveJournal();
     }
 
     /* ---------- EVENTS ---------- */
 
-    explodeBtn.addEventListener("click", explodeDump);
-    autoSortBtn.addEventListener("click", simpleAutoSort);
-    clearBtn.addEventListener("click", clearAll);
+    explodeBtn.addEventListener("click", explodeAndOrganize);
+    autoSortBtn.addEventListener("click", autoSortInbox);
+    clearBoardBtn.addEventListener("click", clearBoardForEntry);
     addColumnBtn.addEventListener("click", addColumn);
 
     printBtn.addEventListener("click", () => {
-      window.print(); // Use browser “Save as PDF” for export
+      window.print();
     });
 
     dumpInput.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        explodeDump();
+        explodeAndOrganize();
       }
     });
 
+    entrySelect.addEventListener("change", () => {
+      saveJournal();
+      journal.activeEntryId = entrySelect.value;
+      loadActiveEntryToUI();
+    });
+
+    newEntryBtn.addEventListener("click", () => {
+      saveJournal();
+      createNewEntry(false);
+    });
+
+    renameEntryBtn.addEventListener("click", () => {
+      const active = getActiveEntry();
+      if (!active) return;
+      const newTitle = prompt("New entry name:", active.title);
+      if (!newTitle) return;
+      active.title = newTitle;
+      renderEntrySelect();
+      saveJournal();
+    });
+
+    deleteEntryBtn.addEventListener("click", deleteCurrentEntry);
+
+    entryNote.addEventListener("blur", saveJournal);
+
     /* ---------- INIT ---------- */
-    initBoard();
+    loadJournal();
   </script>
 </body>
 </html>
