@@ -465,6 +465,10 @@
       <button id="save-layout" class="secondary">Save layout</button>
       <button id="export-csv" class="secondary">Export CSV</button>
 
+      <button id="export-layout" class="secondary">Export layout JSON</button>
+      <button id="import-layout-trigger" class="secondary">Import layout JSON</button>
+      <input id="import-layout" type="file" accept=".json" style="display:none;" />
+
       <button id="import-csv-trigger" class="secondary">Import codes CSV</button>
       <input id="import-csv" type="file" accept=".csv" style="display:none;" />
 
@@ -513,11 +517,15 @@
     const analyticsSummary = document.getElementById("analytics-summary");
     const codeStatsContainer = document.getElementById("code-stats-container");
 
+    const exportLayoutButton = document.getElementById("export-layout");
+    const importLayoutInput = document.getElementById("import-layout");
+    const importLayoutTrigger = document.getElementById("import-layout-trigger");
+
     const blackboard = document.getElementById("blackboard");
     const blackboardBody = document.getElementById("blackboard-body");
 
     let draggedCard = null;
-    let latestStats = null; // still used for analytics panel
+    let latestStats = null; // used for analytics and export
 
     const STOPWORDS = new Set([
       "the","and","or","of","to","a","an","in","on","for","with",
@@ -694,6 +702,23 @@
       return layout;
     }
 
+    function applyLayout(layout) {
+      board.innerHTML = "";
+      if (!layout || !Array.isArray(layout) || layout.length === 0) {
+        for (let i = 0; i < 5; i++) {
+          board.appendChild(createColumnElement(i, `Column ${i+1}`, []));
+        }
+      } else {
+        layout.forEach((colData, index) => {
+          board.appendChild(
+            createColumnElement(index, colData.title || `Column ${index+1}`, colData.cards || [])
+          );
+        });
+      }
+      attachDropzoneHandlers(blackboardBody);
+      refreshEmptyStates();
+    }
+
     function saveLayoutFromDOM() {
       const layout = serializeLayoutFromDOM();
       try {
@@ -714,22 +739,7 @@
       } catch(e) {
         console.warn("Could not load layout:", e);
       }
-
-      board.innerHTML = "";
-      if (!layout || !Array.isArray(layout) || layout.length === 0) {
-        for (let i=0;i<5;i++) {
-          board.appendChild(createColumnElement(i, `Column ${i+1}`, []));
-        }
-      } else {
-        layout.forEach((colData,index) => {
-          board.appendChild(
-            createColumnElement(index, colData.title || `Column ${index+1}`, colData.cards || [])
-          );
-        });
-      }
-
-      attachDropzoneHandlers(blackboardBody);
-      refreshEmptyStates();
+      applyLayout(layout);
     }
 
     function addCode() {
@@ -1048,7 +1058,6 @@
     function exportCSV() {
       const columns = Array.from(document.querySelectorAll(".column"));
 
-      // Header: theme + code + card type + stats + up to 3 quotes
       const rows = [[
         "theme",
         "code",
@@ -1122,6 +1131,36 @@
       URL.revokeObjectURL(url);
     }
 
+    // ---------- Export / Import layout JSON ----------
+    function exportLayoutJSON() {
+      const layout = serializeLayoutFromDOM();
+      const blob = new Blob([JSON.stringify(layout, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "code_playground_layout.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importLayoutJSON(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const layout = JSON.parse(e.target.result);
+          if (!Array.isArray(layout)) throw new Error("Invalid layout format");
+          applyLayout(layout);
+          saveLayoutFromDOM();
+        } catch (err) {
+          console.error(err);
+          alert("Could not import layout JSON. Check the file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
     // ---------- Events ----------
     addButton.addEventListener("click", addCode);
 
@@ -1151,6 +1190,18 @@
     importCsvInput.addEventListener("change", e => {
       const file = e.target.files[0];
       if (file) handleCSVImport(file);
+    });
+
+    exportLayoutButton.addEventListener("click", exportLayoutJSON);
+
+    importLayoutTrigger.addEventListener("click", () => {
+      importLayoutInput.value = "";
+      importLayoutInput.click();
+    });
+
+    importLayoutInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) importLayoutJSON(file);
     });
 
     loadLayout();
