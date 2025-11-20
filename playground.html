@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -176,15 +176,45 @@
       text-transform: uppercase;
       letter-spacing: 0.07em;
       color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .column-header[contenteditable="true"] {
+    .column-title {
+      flex: 1;
+      outline: none;
+    }
+
+    .column-title[contenteditable="true"] {
       cursor: text;
     }
 
-    .column-header:focus {
+    .column-title:focus {
       outline: 1px solid var(--accent);
-      outline-offset: -2px;
+      outline-offset: 2px;
+    }
+
+    .remove-column {
+      border: none;
+      background: transparent;
+      color: #888;
+      border-radius: 999px;
+      width: 18px;
+      height: 18px;
+      font-size: 0.75rem;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .remove-column:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
     }
 
     .column-body {
@@ -608,9 +638,29 @@
 
       const header = document.createElement("div");
       header.className = "column-header";
-      header.contentEditable = "true";
-      header.textContent = title || `Column ${index + 1}`;
-      header.addEventListener("blur", saveLayoutFromDOM);
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "column-title";
+      titleSpan.contentEditable = "true";
+      titleSpan.textContent = title || `Column ${index + 1}`;
+      titleSpan.addEventListener("blur", saveLayoutFromDOM);
+
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-column";
+      removeBtn.title = "Remove column";
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        const themeName = (titleSpan.textContent || "").trim() || "this column";
+        const confirmed = confirm(`Are you sure you want to remove column "${themeName}"?`);
+        if (!confirmed) return;
+        column.remove();
+        refreshEmptyStates();
+        saveLayoutFromDOM();
+      });
+
+      header.appendChild(titleSpan);
+      header.appendChild(removeBtn);
 
       const body = document.createElement("div");
       body.className = "column-body dropzone";
@@ -686,10 +736,10 @@
     function serializeLayoutFromDOM() {
       const layout = [];
       document.querySelectorAll(".column").forEach(col => {
-        const titleEl = col.querySelector(".column-header");
+        const titleEl = col.querySelector(".column-title") || col.querySelector(".column-header");
         const bodyEl = col.querySelector(".column-body");
         const colObj = {
-          title: (titleEl.textContent || "").trim(),
+          title: (titleEl?.textContent || "").trim(),
           cards: []
         };
         bodyEl.querySelectorAll(".card").forEach(card => {
@@ -764,7 +814,7 @@
 
     function generateDescriptors() {
       document.querySelectorAll(".column").forEach(col => {
-        const titleEl = col.querySelector(".column-header");
+        const titleEl = col.querySelector(".column-title") || col.querySelector(".column-header");
         const bodyEl = col.querySelector(".column-body");
         if (!bodyEl) return;
         const codeCards = Array.from(bodyEl.querySelectorAll(".card"))
@@ -910,7 +960,7 @@
       const usedCodes = new Set();
 
       columns.forEach(col => {
-        const titleEl = col.querySelector(".column-header");
+        const titleEl = col.querySelector(".column-title") || col.querySelector(".column-header");
         const title = (titleEl?.textContent || "").trim() || "Untitled column";
         const bodyEl = col.querySelector(".column-body");
         if (!bodyEl) return;
@@ -1074,7 +1124,7 @@
       let totalCards = 0;
 
       columns.forEach(col => {
-        const headerEl = col.querySelector(".column-header");
+        const headerEl = col.querySelector(".column-title") || col.querySelector(".column-header");
         const theme = (headerEl ? headerEl.textContent : "Untitled").trim();
         const cards = Array.from(col.querySelectorAll(".card"));
 
