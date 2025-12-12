@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Sentiment Analysis - Thematic Board</title>
+    <title>AI Sentiment - Consolidated Themes</title>
     <style>
         :root {
             /* Palette Definition */
@@ -68,8 +68,8 @@
         /* Column Styles */
         .column {
             background-color: var(--bg-panel);
-            min-width: 340px;
-            max-width: 340px;
+            min-width: 360px; /* Slightly wider to accommodate merged content */
+            max-width: 360px;
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -88,6 +88,7 @@
             flex-direction: column;
             gap: 6px;
             border-bottom: 1px solid rgba(0,0,0,0.05);
+            z-index: 10;
         }
 
         .header-top {
@@ -99,16 +100,8 @@
         .col-title {
             font-weight: 800;
             text-transform: uppercase;
-            font-size: 14px;
+            font-size: 13px;
             letter-spacing: 0.5px;
-        }
-
-        .theme-badge {
-            font-size: 11px;
-            font-weight: 600;
-            opacity: 0.8;
-            font-style: italic;
-            margin-top: 4px;
         }
 
         .card-count {
@@ -127,6 +120,18 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+        }
+
+        /* Subsection separators within columns */
+        .subsection-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            padding-left: 4px;
+            letter-spacing: 0.5px;
         }
 
         /* Individual Card Styles */
@@ -167,7 +172,6 @@
         .col-purple { background-color: var(--accent-purple); }
         .col-green { background-color: var(--accent-green); }
         .col-red { background-color: var(--accent-red); }
-        .col-lilac { background-color: var(--accent-lilac); }
 
         /* Scrollbar Styling */
         ::-webkit-scrollbar {
@@ -191,7 +195,7 @@
 
     <header>
         <h1>AI Sentiment Analysis</h1>
-        <p class="subtitle">Columns mapped to core themes: Identity, Labels, Tools, and Platform Dynamics</p>
+        <p class="subtitle">Consolidated View: 4 Core Themes</p>
     </header>
 
     <div class="board-container">
@@ -199,12 +203,12 @@
         <div class="column">
             <div class="column-header col-blue">
                 <div class="header-top">
-                    <span class="col-title">Identity</span>
-                    <span class="card-count">32</span>
+                    <span class="col-title">Theme 1: Human Authorship</span>
+                    <span class="card-count">42</span>
                 </div>
-                <div class="theme-badge">Theme 1 – Human authorship as identity</div>
             </div>
             <div class="card-list">
+                <div class="subsection-title">Identity & Expression</div>
                 <div class="card"><div class="card-text">Openness / freedom of circulation</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Disapproval of reliance on AI for creative ideation</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Sees content-creator role as marginal to core artistic identity</div><div class="card-type">code</div></div>
@@ -238,33 +242,13 @@
                 <div class="card"><div class="card-text">Fear of losing critical judgement / ai as a threat to professional visual discernment</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Perfection as a cue of synthetic origin</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Artist identity rooted in idea generation</div><div class="card-type">code</div></div>
-            </div>
-        </div>
 
-        <div class="column">
-            <div class="column-header col-lilac">
-                <div class="header-top">
-                    <span class="col-title">Trust & Ethics</span>
-                    <span class="card-count">3</span>
-                </div>
-                <div class="theme-badge">Theme 1 – Human authorship as identity</div>
-            </div>
-            <div class="card-list">
+                <div class="subsection-title">Trust & Ethics</div>
                 <div class="card"><div class="card-text">Ethical expectation of transparency in creative authorship</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Labels are a moral practice</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Fear that AI-created final outputs undermine the craft.</div><div class="card-type">code</div></div>
-            </div>
-        </div>
 
-        <div class="column">
-            <div class="column-header col-purple">
-                <div class="header-top">
-                    <span class="col-title">Fears & Hopes</span>
-                    <span class="card-count">7</span>
-                </div>
-                <div class="theme-badge">Theme 1 – Human authorship as identity</div>
-            </div>
-            <div class="card-list">
+                <div class="subsection-title">Fears & Hopes</div>
                 <div class="card"><div class="card-text">Frustration towards the loss of creaive agency in ideation</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">fear of losing the capacity to imagine without AI</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Hope that human made art will be more valued for its effort and quality</div><div class="card-type">code</div></div>
@@ -275,15 +259,16 @@
             </div>
         </div>
 
+
         <div class="column">
             <div class="column-header col-purple">
                 <div class="header-top">
-                    <span class="col-title">Label Perception</span>
-                    <span class="card-count">61</span>
+                    <span class="col-title">Theme 2: Labels as Signals</span>
+                    <span class="card-count">79</span>
                 </div>
-                <div class="theme-badge">Theme 2 – Labels as authorship signals</div>
             </div>
             <div class="card-list">
+                <div class="subsection-title">Label Perception</div>
                 <div class="card"><div class="card-text">Perception ai images/ labels conflict from unrealistic AI-generated standards</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Labels seen as a plausible practice of maintaining creator–audience trust</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Perceives AI-generated imagery as economically displacing illustrators</div><div class="card-type">code</div></div>
@@ -346,18 +331,8 @@
                 <div class="card"><div class="card-text">AI-Assisted label shows ambiguous authorship</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">AI-generated label maintains trust and awareness in realistic but synthetic media</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">AI-generated label transforms perception of the image's origin</div><div class="card-type">code</div></div>
-            </div>
-        </div>
 
-        <div class="column">
-            <div class="column-header col-blue">
-                <div class="header-top">
-                    <span class="col-title">Label Functions</span>
-                    <span class="card-count">18</span>
-                </div>
-                <div class="theme-badge">Theme 2 – Labels as authorship signals</div>
-            </div>
-            <div class="card-list">
+                <div class="subsection-title">Label Functions</div>
                 <div class="card"><div class="card-text">Labels as a practice of maintaining creator–audience trust</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Sees labels as a solution to restore user agency sees labels as segmentation cues that sort audiences by content preference</div><div class="card-type">code</div></div>
                 <div class="card"><div class="card-text">Human-made label frames creation as a competence of identities with AI</div><div class="card-type">code</div></div>
@@ -382,10 +357,9 @@
         <div class="column">
             <div class="column-header col-red">
                 <div class="header-top">
-                    <span class="col-title">AI Tools / Process</span>
+                    <span class="col-title">Theme 3: AI as Tool</span>
                     <span class="card-count">38</span>
                 </div>
-                <div class="theme-badge">Theme 3 – AI as production tool, not co-author</div>
             </div>
             <div class="card-list">
                 <div class="card"><div class="card-text">Curiosity towards AI as a creative tool</div><div class="card-type">code</div></div>
@@ -431,10 +405,9 @@
         <div class="column">
             <div class="column-header col-green">
                 <div class="header-top">
-                    <span class="col-title">Platform Ecosystem</span>
+                    <span class="col-title">Theme 4: Platform Dynamics</span>
                     <span class="card-count">20</span>
                 </div>
-                <div class="theme-badge">Theme 4 – Platform dynamics</div>
             </div>
             <div class="card-list">
                 <div class="card"><div class="card-text">Audience lacks critical visual discernment</div><div class="card-type">code</div></div>
