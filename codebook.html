@@ -1,175 +1,576 @@
-const STORAGE_KEY = 'codebookLayout_v2';
-const DEFAULT_BOARD_HTML = document.getElementById('board').innerHTML;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codebook Interactive</title>
 
-function normalize(s) {
-  return (s || '').trim().toLowerCase();
-}
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
-function saveBoard() {
-  localStorage.setItem(STORAGE_KEY, document.getElementById('board').innerHTML);
-}
+  <style>
+    :root {
+      --text-primary: #2F323A;
+      --text-secondary: #848484;
+      --bg-panel: #EEF0F4;
+      --bg-page: #FFFFFF;
 
-function updateCounts() {
-  document.querySelectorAll('.column').forEach(col => {
-    const count = col.querySelectorAll('.card').length;
-    const counter = col.querySelector('.card-count');
-    if (counter) counter.innerText = count;
-  });
-}
+      --theme-1-yellow: #f9eea2;
+      --theme-2-green: #BBEED5;
+      --theme-3-purple: #B9B3F8;
+      --theme-4-blue: #C0DBEE;
 
-// --- Quote count badge injection (no need to edit all cards) ---
-function ensureQuoteBadge(card) {
-  const typeEl = card.querySelector('.card-type');
-  if (!typeEl) return;
-
-  let badge = typeEl.querySelector('.quote-count');
-  if (!badge) {
-    badge = document.createElement('span');
-    badge.className = 'quote-count';
-    typeEl.appendChild(badge);
-  }
-
-  const n = Number(card.dataset.quoteCount || 0);
-  badge.textContent = `${n} quote${n === 1 ? '' : 's'}`;
-}
-
-function inferQuoteCountFromRenderedQuotes(text) {
-  const t = (text || '').trim();
-  if (!t) return 0;
-  const chunks = t.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
-  return chunks.length || 1;
-}
-
-function refreshAllBadges() {
-  document.querySelectorAll('.card').forEach(card => {
-    if (!card.dataset.quoteCount) {
-      const quoteEl = card.querySelector('.card-quote');
-      const n = (quoteEl && quoteEl.classList.contains('visible'))
-        ? inferQuoteCountFromRenderedQuotes(quoteEl.innerText)
-        : 0;
-      card.dataset.quoteCount = String(n);
+      --btn-hover: #e2e4e8;
+      --accent-primary: #B9B3F8;
     }
-    ensureQuoteBadge(card);
-  });
-}
 
-function initSortable() {
-  document.querySelectorAll('.card-list').forEach(column => {
-    new Sortable(column, {
-      group: 'shared',
-      animation: 150,
-      ghostClass: 'sortable-ghost',
-      onEnd: () => { updateCounts(); saveBoard(); }
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 40px;
+      background-color: var(--bg-page);
+      border-bottom: 1px solid var(--bg-panel);
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-content h1 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--text-primary);
+    }
+
+    .header-content p.subtitle {
+      margin: 5px 0 0 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background-color: var(--bg-panel);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover { background-color: var(--btn-hover); }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    input[type="file"] { display: none; }
+
+    .board-container {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 30px 40px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .column {
+      background-color: var(--bg-panel);
+      min-width: 360px;
+      max-width: 360px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      max-height: 100%;
+      flex-shrink: 0;
+      transition: box-shadow 0.2s;
+    }
+
+    .column-header {
+      padding: 16px 20px;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      color: var(--text-primary);
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      z-index: 10;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .col-title {
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    .card-count {
+      background: rgba(255,255,255,0.6);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .card-list {
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 50px;
+    }
+
+    .subsection-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      padding-left: 4px;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+
+    .card {
+      background-color: #FFFFFF;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid transparent;
+      cursor: grab;
+      position: relative;
+    }
+
+    .card:active { cursor: grabbing; }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+    }
+
+    .card-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .card-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      background-color: var(--bg-panel);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .quote-count {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: none;
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.75);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .card-quote {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #666;
+      font-style: italic;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .card-quote.visible { display: block; }
+
+    .col-theme-1 { background-color: var(--theme-1-yellow); }
+    .col-theme-2 { background-color: var(--theme-2-green); }
+    .col-theme-3 { background-color: var(--theme-3-purple); }
+    .col-theme-4 { background-color: var(--theme-4-blue); }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+  </style>
+
+  <!-- Google Translate -->
+  <script>
+    function translatePage() {
+      new google.translate.TranslateElement(
+        {
+          pageLanguage: 'en',
+          includedLanguages: 'en,it',
+          autoDisplay: false
+        },
+        'google_translate_element'
+      );
+    }
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=translatePage"></script>
+</head>
+
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Codebook</h1>
+      <p class="subtitle">Consolidated View: 4 Core Themes</p>
+    </div>
+
+    <div class="controls" data-html2canvas-ignore="true">
+      <input type="file" id="csvInput" accept=".csv" />
+      <button class="btn btn-primary" id="importBtn">📂 Import CSV to Add Quotes</button>
+      <button class="btn" id="addCodeBtn">+ Add Card</button>
+      <button class="btn" id="saveBtn">Save Layout</button>
+      <button class="btn" id="exportPdfBtn">Export PDF</button>
+      <div id="google_translate_element"></div>
+    </div>
+  </header>
+
+  <!-- OPTIONAL: Embed CSV directly into the HTML.
+       Paste your CSV rows here (tag,content). -->
+  <script id="embeddedCsv" type="text/plain">
+tag,content
+  </script>
+
+  <div class="board-container" id="board">
+
+    <!-- Theme 1 -->
+    <div class="column">
+      <div class="column-header col-theme-1">
+        <div class="header-top">
+          <span class="col-title">Theme 1: Human Authorship</span>
+          <span class="card-count">0</span>
+        </div>
+      </div>
+      <div class="card-list">
+        <div class="subsection-title">Identity & Expression</div>
+
+        <div class="card">
+          <div class="card-text">Openness / freedom of circulation</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-text">Disapproval of reliance on AI for creative ideation</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-text">Sees content-creator role as marginal to core artistic identity</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+
+        <!-- Add the rest of your cards here, using the same card-type pattern -->
+      </div>
+    </div>
+
+    <!-- Theme 2 -->
+    <div class="column">
+      <div class="column-header col-theme-2">
+        <div class="header-top">
+          <span class="col-title">Theme 2: Labels as Signals</span>
+          <span class="card-count">0</span>
+        </div>
+      </div>
+      <div class="card-list">
+        <div class="subsection-title">Label Perception</div>
+
+        <div class="card">
+          <div class="card-text">Perception ai images/ labels conflict from unrealistic AI-generated standards</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-text">Labels seen as a plausible practice of maintaining creator–audience trust</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme 3 -->
+    <div class="column">
+      <div class="column-header col-theme-3">
+        <div class="header-top">
+          <span class="col-title">Theme 3: AI as Tool</span>
+          <span class="card-count">0</span>
+        </div>
+      </div>
+      <div class="card-list">
+        <div class="card">
+          <div class="card-text">Curiosity towards AI as a creative tool</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme 4 -->
+    <div class="column">
+      <div class="column-header col-theme-4">
+        <div class="header-top">
+          <span class="col-title">Theme 4: Platform Dynamics</span>
+          <span class="card-count">0</span>
+        </div>
+      </div>
+      <div class="card-list">
+        <div class="card">
+          <div class="card-text">losing collective ability to tell real from fake</div>
+          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+          <div class="card-quote"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'codebookLayout_v2';
+
+    function normalize(s) {
+      return (s || '').trim().toLowerCase();
+    }
+
+    function saveBoard() {
+      const boardHTML = document.getElementById('board').innerHTML;
+      localStorage.setItem(STORAGE_KEY, boardHTML);
+    }
+
+    function updateCounts() {
+      document.querySelectorAll('.column').forEach(col => {
+        const count = col.querySelectorAll('.card').length;
+        const counter = col.querySelector('.card-count');
+        if (counter) counter.innerText = count;
+      });
+    }
+
+    function ensureQuoteBadge(card) {
+      const typeEl = card.querySelector('.card-type');
+      if (!typeEl) return;
+
+      let badge = typeEl.querySelector('.quote-count');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'quote-count';
+        typeEl.appendChild(badge);
+      }
+
+      const n = Number(card.dataset.quoteCount || 0);
+      badge.textContent = `${n} quote${n === 1 ? '' : 's'}`;
+    }
+
+    function setQuoteCount(card, n) {
+      card.dataset.quoteCount = String(n || 0);
+      ensureQuoteBadge(card);
+    }
+
+    function inferQuoteCountFromText(text) {
+      const t = (text || '').trim();
+      if (!t) return 0;
+
+      // If we rendered multiple quotes separated by blank lines, count them
+      const chunks = t.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
+      return chunks.length || 1;
+    }
+
+    function refreshAllBadges() {
+      document.querySelectorAll('.card').forEach(card => {
+        if (!card.dataset.quoteCount) {
+          const quoteEl = card.querySelector('.card-quote');
+          const n = (quoteEl && quoteEl.classList.contains('visible'))
+            ? inferQuoteCountFromText(quoteEl.innerText)
+            : 0;
+          card.dataset.quoteCount = String(n);
+        }
+        ensureQuoteBadge(card);
+      });
+    }
+
+    function initSortable() {
+      document.querySelectorAll('.card-list').forEach(column => {
+        new Sortable(column, {
+          group: 'shared',
+          animation: 150,
+          ghostClass: 'sortable-ghost',
+          onEnd: () => { updateCounts(); saveBoard(); }
+        });
+      });
+    }
+
+    function hydrateCards(dataRows) {
+      const cards = document.querySelectorAll('.card');
+
+      // tag -> [quotes...]
+      const map = new Map();
+      (dataRows || []).forEach(r => {
+        const tag = normalize(r.tag);
+        const content = (r.content || '').trim();
+        if (!tag || !content) return;
+
+        if (!map.has(tag)) map.set(tag, []);
+        map.get(tag).push(content);
+      });
+
+      let matchedQuotesTotal = 0;
+
+      cards.forEach(card => {
+        const titleEl = card.querySelector('.card-text');
+        const quoteEl = card.querySelector('.card-quote');
+        if (!titleEl || !quoteEl) return;
+
+        const key = normalize(titleEl.innerText);
+        const quotes = map.get(key);
+
+        if (quotes && quotes.length) {
+          quoteEl.innerText = quotes.map(q => `“${q}”`).join('\n\n');
+          quoteEl.classList.add('visible');
+          setQuoteCount(card, quotes.length);
+          matchedQuotesTotal += quotes.length;
+        } else {
+          const existingVisible = quoteEl.classList.contains('visible') && quoteEl.innerText.trim().length;
+          const n = existingVisible ? inferQuoteCountFromText(quoteEl.innerText) : 0;
+          setQuoteCount(card, n);
+        }
+      });
+
+      updateCounts();
+      saveBoard();
+      refreshAllBadges();
+      alert(`CSV imported: matched ${matchedQuotesTotal} quotes across your codes.`);
+    }
+
+    // Controls
+    const csvInput = document.getElementById('csvInput');
+    document.getElementById('importBtn').addEventListener('click', () => csvInput.click());
+
+    csvInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          hydrateCards(results.data || []);
+          csvInput.value = '';
+        }
+      });
     });
-  });
-}
 
-// --- CSV hydration: supports multiple rows with same tag ---
-function hydrateCards(rows) {
-  const map = new Map(); // tag -> [quotes]
-  (rows || []).forEach(r => {
-    const tag = normalize(r.tag);
-    const content = (r.content || '').trim();
-    if (!tag || !content) return;
-    if (!map.has(tag)) map.set(tag, []);
-    map.get(tag).push(content);
-  });
+    document.getElementById('addCodeBtn').addEventListener('click', () => {
+      const title = prompt("Enter the code name:");
+      if (!title) return;
 
-  let matchedTotal = 0;
+      const newCard = document.createElement('div');
+      newCard.className = 'card';
+      newCard.innerHTML = `
+        <div class="card-text">${title}</div>
+        <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+        <div class="card-quote"></div>
+      `;
 
-  document.querySelectorAll('.card').forEach(card => {
-    const titleEl = card.querySelector('.card-text');
-    const quoteEl = card.querySelector('.card-quote');
-    if (!titleEl || !quoteEl) return;
+      const firstList = document.querySelector('.card-list');
+      if (firstList) firstList.prepend(newCard);
 
-    const key = normalize(titleEl.innerText);
-    const quotes = map.get(key);
+      updateCounts();
+      saveBoard();
+      refreshAllBadges();
+    });
 
-    if (quotes && quotes.length) {
-      quoteEl.innerText = quotes.map(q => `“${q}”`).join('\n\n');
-      quoteEl.classList.add('visible');
-      card.dataset.quoteCount = String(quotes.length);
-      matchedTotal += quotes.length;
-    } else {
-      // keep existing content, but ensure count is consistent
-      const existing = quoteEl.classList.contains('visible') ? quoteEl.innerText : '';
-      card.dataset.quoteCount = String(inferQuoteCountFromRenderedQuotes(existing));
-    }
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      saveBoard();
+      const btn = document.getElementById('saveBtn');
+      const original = btn.innerText;
+      btn.innerText = "Saved!";
+      setTimeout(() => btn.innerText = original, 1000);
+    });
 
-    ensureQuoteBadge(card);
-  });
+    document.getElementById('exportPdfBtn').addEventListener('click', () => {
+      const element = document.body;
+      const opt = {
+        margin: 0,
+        filename: 'codebook_export.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+      html2pdf().set(opt).from(element).save();
+    });
 
-  updateCounts();
-  saveBoard();
-  alert(`CSV imported: matched ${matchedTotal} quotes across your codes.`);
-}
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        document.getElementById('board').innerHTML = saved;
+      } else {
+        const raw = document.getElementById('embeddedCsv')?.textContent?.trim();
+        if (raw && raw.includes(',')) {
+          const parsed = Papa.parse(raw, { header: true, skipEmptyLines: true });
+          hydrateCards(parsed.data || []);
+        }
+      }
 
-// --- Wire up controls ---
-const csvInput = document.getElementById('csvInput');
-document.getElementById('importBtn').addEventListener('click', () => csvInput.click());
-
-csvInput.addEventListener('change', (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      hydrateCards(results.data || []);
-      csvInput.value = '';
-    }
-  });
-});
-
-document.getElementById('addCodeBtn').addEventListener('click', () => {
-  const title = prompt("Enter the code name:");
-  if (!title) return;
-
-  const newCard = document.createElement('div');
-  newCard.className = 'card';
-  newCard.dataset.quoteCount = "0";
-  newCard.innerHTML = `
-    <div class="card-text">${title}</div>
-    <div class="card-type">code</div>
-    <div class="card-quote"></div>
-  `;
-
-  const firstList = document.querySelector('.card-list');
-  if (firstList) firstList.prepend(newCard);
-
-  ensureQuoteBadge(newCard);
-  updateCounts();
-  saveBoard();
-});
-
-document.getElementById('saveBtn').addEventListener('click', () => {
-  saveBoard();
-  const btn = document.getElementById('saveBtn');
-  const original = btn.innerText;
-  btn.innerText = "Saved!";
-  setTimeout(() => btn.innerText = original, 1000);
-});
-
-document.getElementById('resetBtn').addEventListener('click', () => {
-  localStorage.removeItem(STORAGE_KEY);
-  document.getElementById('board').innerHTML = DEFAULT_BOARD_HTML;
-
-  initSortable();
-  updateCounts();
-  refreshAllBadges();
-  saveBoard();
-});
-
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-
-  // If a saved layout exists, restore it; otherwise keep the default HTML in the file
-  if (saved) {
-    document.getElementById('board').innerHTML = saved;
-  }
-
-  initSortable();
-  updateCounts();
-  refreshAllBadges();
-});
+      initSortable();
+      updateCounts();
+      refreshAllBadges();
+    });
+  </script>
+</body>
+</html>
