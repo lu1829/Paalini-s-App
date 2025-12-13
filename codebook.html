@@ -281,22 +281,20 @@
             <button class="btn" id="saveBtn">Save Layout</button>
             <button class="btn" id="exportPdfBtn">Export PDF</button>
             <div id="google_translate_element"></div>
-
-
-<script>
-function translatePage() {
-  new google.translate.TranslateElement(
-    {
-      pageLanguage: 'auto',
-      includedLanguages: 'it',
-      autoDisplay: false
-    },
-    'google_translate_element'
-  );
-}
-</script>
-
-<script src="https://translate.google.com/translate_a/element.js?cb=translatePage"></script>
+            <div id="google_translate_element"></div>
+            <script>
+              function translatePage() {
+                new google.translate.TranslateElement(
+                  {
+                    pageLanguage: 'en',          // canonical source language
+                    includedLanguages: 'en,it',  // languages you want available
+                    autoDisplay: false
+                  },
+                  'google_translate_element'
+                );
+              }
+            </script> 
+            <script src="https://translate.google.com/translate_a/element.js?cb=translatePage"></script>
         </div>
     </header>
 
