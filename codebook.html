@@ -12,6 +12,7 @@
 
   <style>
     :root {
+      /* Palette */
       --text-primary: #2F323A;
       --text-secondary: #848484;
       --bg-panel: #EEF0F4;
@@ -48,6 +49,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 16px;
+      flex-wrap: wrap;
     }
 
     .header-content h1 {
@@ -62,6 +64,7 @@
       font-size: 14px;
     }
 
+    /* Toolbar */
     .controls {
       display: flex;
       gap: 10px;
@@ -79,9 +82,10 @@
       color: var(--text-primary);
       cursor: pointer;
       transition: background-color 0.2s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
+      user-select: none;
     }
 
     .btn:hover { background-color: var(--btn-hover); }
@@ -90,10 +94,18 @@
       background-color: var(--accent-primary);
       color: #fff;
     }
-    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-primary:hover { opacity: 0.92; }
+
+    .btn-danger {
+      background-color: #F5A4AB;
+      color: #2F323A;
+    }
+    .btn-danger:hover { opacity: 0.92; }
 
     input[type="file"] { display: none; }
 
+    /* Board */
     .board-container {
       flex: 1;
       overflow-x: auto;
@@ -113,7 +125,6 @@
       flex-direction: column;
       max-height: 100%;
       flex-shrink: 0;
-      transition: box-shadow 0.2s;
     }
 
     .column-header {
@@ -212,6 +223,7 @@
       font-weight: 700;
     }
 
+    /* Badge that shows quote count */
     .quote-count {
       font-size: 10px;
       font-weight: 800;
@@ -236,11 +248,13 @@
 
     .card-quote.visible { display: block; }
 
+    /* Column colors */
     .col-theme-1 { background-color: var(--theme-1-yellow); }
     .col-theme-2 { background-color: var(--theme-2-green); }
     .col-theme-3 { background-color: var(--theme-3-purple); }
     .col-theme-4 { background-color: var(--theme-4-blue); }
 
+    /* Scrollbars */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
@@ -272,23 +286,25 @@
 
     <div class="controls" data-html2canvas-ignore="true">
       <input type="file" id="csvInput" accept=".csv" />
+
       <button class="btn btn-primary" id="importBtn">📂 Import CSV to Add Quotes</button>
       <button class="btn" id="addCodeBtn">+ Add Card</button>
       <button class="btn" id="saveBtn">Save Layout</button>
+      <button class="btn btn-danger" id="resetBtn">Reset Layout</button>
       <button class="btn" id="exportPdfBtn">Export PDF</button>
+
       <div id="google_translate_element"></div>
     </div>
   </header>
 
-  <!-- OPTIONAL: Embed CSV directly into the HTML.
-       Paste your CSV rows here (tag,content). -->
+  <!-- OPTIONAL: paste CSV here if you want auto-hydration on first run (tag,content) -->
   <script id="embeddedCsv" type="text/plain">
 tag,content
   </script>
 
   <div class="board-container" id="board">
 
-    <!-- Theme 1 -->
+    <!-- Theme 1: Human Authorship -->
     <div class="column">
       <div class="column-header col-theme-1">
         <div class="header-top">
@@ -296,32 +312,61 @@ tag,content
           <span class="card-count">0</span>
         </div>
       </div>
+
       <div class="card-list">
         <div class="subsection-title">Identity & Expression</div>
 
-        <div class="card">
-          <div class="card-text">Openness / freedom of circulation</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
+        <div class="card"><div class="card-text">Openness / freedom of circulation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Disapproval of reliance on AI for creative ideation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees content-creator role as marginal to core artistic identity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI disrupts the ability to evaluate artistic authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">human made content is nourishing</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Artistic identity grounded in intrinsic personal expression</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Ethical awareness as creative identity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Values clarity to prevent authorship and rights disputes</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Uses social media as professional showcase</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">identity anchored in purpose/professionalism</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">his work expresses ideas, not his inner emotional state.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Uses social media for professional visibility, not persona building</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Professional authorship is kept separate from AI influence</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Human talent is assumed real within trusted communities</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">believes time and effort produce authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Human authorship anchored in personal narrative rather than technical craft</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Human Intent vs. AI Autonomy (“Human objective determines perceived legitimacy”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Reluctance to Disclose Minor AI Use</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Creator Identity Threatened by Over-labeling</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Reliance on social cues to identify AI</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Multiplatform creator identity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Artistic primary authorship (“I am an independent artist-composer”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">utilitarian visual identity (singer)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Platform dependency for visibility (“Algorithmic pressure to produce visuals”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Visual content as secondary to the true creative product (“Visuals support music”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI visual generation 'skills' as a threat</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Aesthetic Resistance to large labels/ “Large labels interfere with presentation”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“Label erases human creativity” / Fear of Misattributed Authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI increases speed, efficiency, cost, and reduces creative bottlenecks</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“Creativity still comes from me” / Assertion of human primacy</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Fear of losing critical judgement / ai as a threat to professional visual discernment</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Perfection as a cue of synthetic origin</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Artist identity rooted in idea generation</div><div class="card-type">code</div><div class="card-quote"></div></div>
 
-        <div class="card">
-          <div class="card-text">Disapproval of reliance on AI for creative ideation</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
+        <div class="subsection-title">Trust & Ethics</div>
+        <div class="card"><div class="card-text">Ethical expectation of transparency in creative authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels are a moral practice</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Fear that AI-created final outputs undermine the craft.</div><div class="card-type">code</div><div class="card-quote"></div></div>
 
-        <div class="card">
-          <div class="card-text">Sees content-creator role as marginal to core artistic identity</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
-
-        <!-- Add the rest of your cards here, using the same card-type pattern -->
+        <div class="subsection-title">Fears & Hopes</div>
+        <div class="card"><div class="card-text">Frustration towards the loss of creaive agency in ideation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">fear of losing the capacity to imagine without AI</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Hope that human made art will be more valued for its effort and quality</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">wants clarity and specificity in creative disclosure</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Values representation of creative labor</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Audiences will eventually sharpen their eye to distinguish human vs AI.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Creative Anxiety / “If AI can do this, what happens to human creativity?”</div><div class="card-type">code</div><div class="card-quote"></div></div>
       </div>
     </div>
 
-    <!-- Theme 2 -->
+    <!-- Theme 2: Labels as Signals -->
     <div class="column">
       <div class="column-header col-theme-2">
         <div class="header-top">
@@ -329,24 +374,96 @@ tag,content
           <span class="card-count">0</span>
         </div>
       </div>
+
       <div class="card-list">
         <div class="subsection-title">Label Perception</div>
 
-        <div class="card">
-          <div class="card-text">Perception ai images/ labels conflict from unrealistic AI-generated standards</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
+        <div class="card"><div class="card-text">Perception ai images/ labels conflict from unrealistic AI-generated standards</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels seen as a plausible practice of maintaining creator–audience trust</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Perceives AI-generated imagery as economically displacing illustrators</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Need for labels to show her true value over AI content</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-Assisted label means a human gave idea to the machine</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“Made with AI” label as meaning that the image has no human-originated creative input</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Co-created with AI label highlights ambiguity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Perceives disclosure as credibility signals</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees labels as fillters in an information stream</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-generated image: Hyper-realism creates uncertainty</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-Assisted label restores a line between image and reality</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Creators rely on subtle visual logic to detect authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Imperfections become diagnostic cues of fakeness</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI art image challenges trust in his own visual judgment</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels help confirm what the eye cannot trust</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">interior design image AI output perceived as technically competent but not real</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI is already common in architectural visualization.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI label normalizes synthetic content in professional workflows</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI perfection destabilizes trust in authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Platform labels compete with creator reputation as signals of truth.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">conceptual art image collapses the boundary between talent and automation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Rejects co-creation because AI lacks human imperfection</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees co-creation with AI as incompatible with artistic intention</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Feels co-creation exaggerates AI’s artistic agency</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Requires quantifiable creative effort to accept co-creation.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">co-created label highlights ambiguity of percentage of human authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Questions the legitimacy of calling something co-created if the human role is minor</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels matter only when AI realism fools perception</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI content is like 'fast-food'</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Context-dependent emotional detachment</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-assisted label amplifies perceived discomfort</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-assisted triggers conditonal appreciation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">'Made with AI' label accepted under the interior design context</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Co-created label is acceptable in fictional or world-building contexts</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Co-created label preserves human authorship as the origin point</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI use in high-art formats threatens authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-generated Label reduces perceived authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">ai generated label triggers instant disinterest</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI use accepted in low-stakes, playful, non-professional contexts</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">authorship only matters when the image is artistic or expressive.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“Made with AI” does not reduce value because the goal isn’t artistic authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI feels appropriate in functional contexts</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Low-stakes functional images = label is normalized</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Label Does Not Threaten Professional Identity in Non-Artistic Tasks</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Technical Acceptance (“AI fits architectural visualization norms”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Co-Creative with AI label amplifies loss or perceived human authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Proportionality of AI Use (“Percentage matters”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Context-dependent acceptance of labels / “Label is fine when AI is the medium”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Hyperreal AI triggers concern / “Realistic AI + label = perceptual alarm”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">labels become a warning when context is of impact</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">need for clarification in percentage, the extent AI was used</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">High realism perception despite the AI-generated label, suspicion it is real</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">'AI-generated' label becomes associated with possible fakery</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">'AI-assisted' label when AI is a creative extension</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">'AI-Assisted' blurs authorship boundaries enough to enable plausible deceit.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">'Made with AI' label perceived neutrally in an interior desgin context</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">context awareness of AI use defines the value of the content</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Collaborative Authorship Interpretation / “Co-created implies joint effort”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Artistic identity rooted in authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-Assisted label shows ambiguous authorship</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-generated label maintains trust and awareness in realistic but synthetic media</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI-generated label transforms perception of the image's origin</div><div class="card-type">code</div><div class="card-quote"></div></div>
 
-        <div class="card">
-          <div class="card-text">Labels seen as a plausible practice of maintaining creator–audience trust</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
+        <div class="subsection-title">Label Functions</div>
+        <div class="card"><div class="card-text">Labels as a practice of maintaining creator–audience trust</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees labels as a solution to restore user agency sees labels as segmentation cues that sort audiences by content preference</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Human-made label frames creation as a competence of identities with AI</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Human-made label risks becoming deceptive when verification is unclear</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">human-made label enforces belief that the value of authenticity is already in crisis</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees disclosure as an industrial standard rather than a moral act.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">In response to social issues, labels become an urgent standard defense</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">As AI becomes the norm, human-made work will require its own label</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels as first-line defence against misuse</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels are a temporary perceptual aid, not a permanent requirement.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">anticipates a future where human-made label becomes a valuable</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels protect against deception / “Labels safeguard vulnerable audiences”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">label disclosure is important, but she fears the overuse of labels might distort how people judge her work</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Perceived Penalty for Disclosure in Artistic Fields / “Label can harm visibility and opportunity”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees labels as a solution to restore user agency</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Ethical Imperative for High-Impact Content / “For news and socially impactful media, labels are mandatory”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“Labels need nuance” / Desire for percentage disclosure</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“Human-made label is comforting but must be aeshtetically subtle”</div><div class="card-type">code</div><div class="card-quote"></div></div>
       </div>
     </div>
 
-    <!-- Theme 3 -->
+    <!-- Theme 3: AI as Tool -->
     <div class="column">
       <div class="column-header col-theme-3">
         <div class="header-top">
@@ -354,16 +471,43 @@ tag,content
           <span class="card-count">0</span>
         </div>
       </div>
+
       <div class="card-list">
-        <div class="card">
-          <div class="card-text">Curiosity towards AI as a creative tool</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
+        <div class="card"><div class="card-text">Curiosity towards AI as a creative tool</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Negotiating adoption while protecting creative agency</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Curiosity towards AI in tension with his ethical commitment.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI accepted as a reference tool, but not a creative author</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI for ideation is not a priority</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI as a scaffolding technique</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">3D and AI as mediums of expression, not identity threats</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI explored as a technical curiosity, not as creative input</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Accepts AI in the workflow but rejects AI as final author</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees AI as a mechanism for realistic simulation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI lacks intentionality and interpretation</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI doesn’t create, it recombines.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI threatens labor-based creative professions</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Efficiency vs craft value tension</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI is a threat when it replaces process, not when it replaces ideas</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI is fine as an internal tool but not as a co-author of the artifact.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">believes time and effort produce authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI is a threat when it replaces process</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Manipulability of narratives using AI</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Legal vulnerability caused by AI</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Perceived irrelevance of AI to current creative practice</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Doesn't consider AI as a serious tool until it becomes a clear industry norm</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">resists replacing his work with AI partly because of the time, money, and effort invested in learning his craft</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI accepted as an information-retrieval tool</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI tools perceived as valid for factual accuracy, not emotional authenticity</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI as a visualization tool for world-building</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI as an experimentation tool</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Tool-Based Recognition of Skill (“Skill in prompting still belongs to the human”)</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI as an edition Tool</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">“AI as the lazy teammate”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">AI as a compensatory tool / “AI supports creators lacking specific skills”</div><div class="card-type">code</div><div class="card-quote"></div></div>
       </div>
     </div>
 
-    <!-- Theme 4 -->
+    <!-- Theme 4: Platform Dynamics -->
     <div class="column">
       <div class="column-header col-theme-4">
         <div class="header-top">
@@ -371,27 +515,40 @@ tag,content
           <span class="card-count">0</span>
         </div>
       </div>
+
       <div class="card-list">
-        <div class="card">
-          <div class="card-text">losing collective ability to tell real from fake</div>
-          <div class="card-type">code <span class="quote-count">0 quotes</span></div>
-          <div class="card-quote"></div>
-        </div>
+        <div class="card"><div class="card-text">losing collective ability to tell real from fake</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">sees social media as an ecosystem where identity gets distorted. Ai is not the original problem</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Sees social media as a space where authenticity is already unstable</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Fear of political and harmful misuse</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">believes people are already overwhelmed by curated, idealized realities.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Media performance of perfection undermines trust</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Labels signal moral character and artistic integrity.</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Mandatory enforcement increases trust in the label system</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Platform automated labelling Label exaggerates AI’s contribution / “Label inflates AI credit”</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Perceived copyright vulnerability among other artists</div><div class="card-type">code</div><div class="card-quote"></div></div>
+        <div class="card"><div class="card-text">Unstable authorship boundaries in social media environments</div><div class="card-type">code</div><div class="card-quote"></div></div>
       </div>
     </div>
 
   </div>
 
   <script>
-    const STORAGE_KEY = 'codebookLayout_v2';
+    const STORAGE_KEY = 'codebookLayout_v3';
+
+    // Capture the full default board (from the HTML file itself) BEFORE we restore saved layouts.
+    let DEFAULT_BOARD_HTML = null;
 
     function normalize(s) {
-      return (s || '').trim().toLowerCase();
+      return (s || '')
+        .replace(/\u00A0/g, ' ')     // nbsp -> space
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
     }
 
     function saveBoard() {
-      const boardHTML = document.getElementById('board').innerHTML;
-      localStorage.setItem(STORAGE_KEY, boardHTML);
+      localStorage.setItem(STORAGE_KEY, document.getElementById('board').innerHTML);
     }
 
     function updateCounts() {
@@ -417,16 +574,10 @@ tag,content
       badge.textContent = `${n} quote${n === 1 ? '' : 's'}`;
     }
 
-    function setQuoteCount(card, n) {
-      card.dataset.quoteCount = String(n || 0);
-      ensureQuoteBadge(card);
-    }
-
-    function inferQuoteCountFromText(text) {
+    function inferQuoteCountFromRenderedQuotes(text) {
       const t = (text || '').trim();
       if (!t) return 0;
-
-      // If we rendered multiple quotes separated by blank lines, count them
+      // We render multiple quotes separated by blank lines
       const chunks = t.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
       return chunks.length || 1;
     }
@@ -436,7 +587,7 @@ tag,content
         if (!card.dataset.quoteCount) {
           const quoteEl = card.querySelector('.card-quote');
           const n = (quoteEl && quoteEl.classList.contains('visible'))
-            ? inferQuoteCountFromText(quoteEl.innerText)
+            ? inferQuoteCountFromRenderedQuotes(quoteEl.innerText)
             : 0;
           card.dataset.quoteCount = String(n);
         }
@@ -455,12 +606,10 @@ tag,content
       });
     }
 
-    function hydrateCards(dataRows) {
-      const cards = document.querySelectorAll('.card');
-
-      // tag -> [quotes...]
+    // CSV hydration supports multiple rows with same tag (tag -> [quotes...])
+    function hydrateCards(rows) {
       const map = new Map();
-      (dataRows || []).forEach(r => {
+      (rows || []).forEach(r => {
         const tag = normalize(r.tag);
         const content = (r.content || '').trim();
         if (!tag || !content) return;
@@ -469,9 +618,9 @@ tag,content
         map.get(tag).push(content);
       });
 
-      let matchedQuotesTotal = 0;
+      let matchedTotal = 0;
 
-      cards.forEach(card => {
+      document.querySelectorAll('.card').forEach(card => {
         const titleEl = card.querySelector('.card-text');
         const quoteEl = card.querySelector('.card-quote');
         if (!titleEl || !quoteEl) return;
@@ -482,19 +631,20 @@ tag,content
         if (quotes && quotes.length) {
           quoteEl.innerText = quotes.map(q => `“${q}”`).join('\n\n');
           quoteEl.classList.add('visible');
-          setQuoteCount(card, quotes.length);
-          matchedQuotesTotal += quotes.length;
+          card.dataset.quoteCount = String(quotes.length);
+          matchedTotal += quotes.length;
         } else {
-          const existingVisible = quoteEl.classList.contains('visible') && quoteEl.innerText.trim().length;
-          const n = existingVisible ? inferQuoteCountFromText(quoteEl.innerText) : 0;
-          setQuoteCount(card, n);
+          // Keep whatever is already there; just ensure count + badge are consistent
+          const existing = quoteEl.classList.contains('visible') ? quoteEl.innerText : '';
+          card.dataset.quoteCount = String(inferQuoteCountFromRenderedQuotes(existing));
         }
+
+        ensureQuoteBadge(card);
       });
 
       updateCounts();
       saveBoard();
-      refreshAllBadges();
-      alert(`CSV imported: matched ${matchedQuotesTotal} quotes across your codes.`);
+      alert(`CSV imported: matched ${matchedTotal} quotes across your codes.`);
     }
 
     // Controls
@@ -521,18 +671,19 @@ tag,content
 
       const newCard = document.createElement('div');
       newCard.className = 'card';
+      newCard.dataset.quoteCount = "0";
       newCard.innerHTML = `
         <div class="card-text">${title}</div>
-        <div class="card-type">code <span class="quote-count">0 quotes</span></div>
+        <div class="card-type">code</div>
         <div class="card-quote"></div>
       `;
 
       const firstList = document.querySelector('.card-list');
       if (firstList) firstList.prepend(newCard);
 
+      ensureQuoteBadge(newCard);
       updateCounts();
       saveBoard();
-      refreshAllBadges();
     });
 
     document.getElementById('saveBtn').addEventListener('click', () => {
@@ -541,6 +692,16 @@ tag,content
       const original = btn.innerText;
       btn.innerText = "Saved!";
       setTimeout(() => btn.innerText = original, 1000);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      document.getElementById('board').innerHTML = DEFAULT_BOARD_HTML;
+
+      initSortable();
+      updateCounts();
+      refreshAllBadges();
+      saveBoard();
     });
 
     document.getElementById('exportPdfBtn').addEventListener('click', () => {
@@ -555,11 +716,17 @@ tag,content
       html2pdf().set(opt).from(element).save();
     });
 
+    // Boot
     window.addEventListener('load', () => {
+      // Capture default full board as shipped in the HTML
+      DEFAULT_BOARD_HTML = document.getElementById('board').innerHTML;
+
+      // Restore saved layout if present
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         document.getElementById('board').innerHTML = saved;
       } else {
+        // Optional first-run hydration from embedded CSV
         const raw = document.getElementById('embeddedCsv')?.textContent?.trim();
         if (raw && raw.includes(',')) {
           const parsed = Papa.parse(raw, { header: true, skipEmptyLines: true });
